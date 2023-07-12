@@ -2,7 +2,16 @@
 
 Postgres mass update.
 
-Added a new `joinFrom` method to simplify the sql build.
+This query is used to bulk update in PostgreSQL. You can use this query to update multiple rows at once.
+
+```sql
+update "transactions" as "t"
+set "value" = "m"."value"::decimal
+from (values (1, 10), (2, 20), (3, 30)) as "m" (id, value)
+where "m"."id"::bigint = "t"."id"
+```
+
+Added a new `joinFrom` method in the query builder to simplify the sql build.
 
 # Install
 
@@ -20,8 +29,6 @@ configure in app.php
 ])->toArray(),
 ```
 
-`Johdougss\Database\DatabaseMassUpdateServiceProvider::class`
-
 # Usage
 
 `joinFrom`
@@ -34,11 +41,10 @@ DB::table('transactions as t')
     ]);
 ```
 
-
-
 ### Example 1:
 
 create migration
+
 ```php
 Schema::create('transactions', function (Blueprint $table) {
     $table->id();
@@ -166,7 +172,8 @@ update "transactions" as "t"
 set "value" = (m.value::decimal + 1)::decimal,
     "date"   = m.date::timestamp,
     "type"   = ?,
-    "status" = case t.id when 1 then 'paid' else t.status end
+    "status" = case t.id when 1 then 'paid' else t.status
+end
 from (values (?, ?, ?), (?, ?, ?)) as m (id, date, value)
 where m.id::bigint = "t"."id"
 ```
