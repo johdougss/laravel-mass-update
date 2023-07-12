@@ -2,6 +2,8 @@
 
 Postgres mass update.
 
+Added a new `joinFrom` method to simplify the sql build.
+
 # Install
 
 ```
@@ -22,6 +24,21 @@ configure in app.php
 
 # Usage
 
+`joinFrom`
+
+```php
+DB::table('transactions as t')
+    ->joinFrom([['id' => 1, 'value' => 10], ['id' => 2, 'value' => 20]], 'm', DB::raw('m.id::bigint'), '=', 't.id')
+    ->updateFrom([
+        'value' => DB::raw('m.value::decimal'),
+    ]);
+```
+
+
+
+### Example 1:
+
+create migration
 ```php
 Schema::create('transactions', function (Blueprint $table) {
     $table->id();
@@ -33,7 +50,35 @@ Schema::create('transactions', function (Blueprint $table) {
 });
 ```
 
-### Example 1:
+from values with `join` laravel
+
+```php
+ $values = [
+    [
+        'id' => 1,
+        'value' => 20,
+    ],
+    [
+        'id' => 2,
+        'value' => 30,
+    ],
+     [
+        'id' => 3,
+        'value' => 30,
+    ],
+];
+
+DB::table('transactions as t')
+    ->join(DB::raw('(values (1,10), (2, 20), (3, 30) ) as mu (id, value, date)'), 'mu.id', '=', 't.id')
+    ->updateFrom([
+        'value' => DB::raw('(mu.value::decimal + 1)::decimal'),
+        'date' => DB::raw('mu.date::timestamp'),
+        'type' => 2,
+        'status' => DB::raw('case t.id when 1 then \'paid\' else t.status end'),
+]);
+```
+
+from values with `joinFrom` laravel
 
 ```php
  $values = [
@@ -121,8 +166,7 @@ update "transactions" as "t"
 set "value" = (m.value::decimal + 1)::decimal,
     "date"   = m.date::timestamp,
     "type"   = ?,
-    "status" = case t.id when 1 then 'paid' else t.status
-end
+    "status" = case t.id when 1 then 'paid' else t.status end
 from (values (?, ?, ?), (?, ?, ?)) as m (id, date, value)
 where m.id::bigint = "t"."id"
 ```
