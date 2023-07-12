@@ -1,0 +1,11 @@
+{
+  "name": "johdougss/laravel-mass-update",
+  "require": {
+    "illuminate/database": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Johdougss\\": "src/"
+    }
+  }
+}
