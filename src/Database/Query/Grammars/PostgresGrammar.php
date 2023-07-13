@@ -18,9 +18,15 @@ class PostgresGrammar extends BasePostgresGrammar
 
         $values = [];
         $properties = array_keys($items[0]);
+        $propertiesCount = count($properties);
         foreach ($items as $item) {
             $valuesItem = [];
             foreach ($properties as $property) {
+
+                if ($propertiesCount !== count(array_keys($item))) {
+                    throw new Exception('the amount of properties must be the same in each item');
+                }
+
                 $valuesItem[] = $this->parameter($item[$property]);
             }
 
